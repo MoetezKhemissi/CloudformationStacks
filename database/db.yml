@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS DocumentDB Cluster Creation
+
+Resources:
+  DocumentDBCluster:
+    Type: 'AWS::DocDB::DBCluster'
+    Properties:
+      DBClusterIdentifier: 'my-documentdb-cluster'
+      MasterUsername: '{{resolve:secretsmanager:AppSecrets:SecretString:MasterUsername}}'
+      MasterUserPassword: '{{resolve:secretsmanager:AppSecrets:SecretString:MasterUserPassword}}'
+      BackupRetentionPeriod: 7
+      DBSubnetGroupName: !Ref MyDBSubnetGroup
+      VpcSecurityGroupIds:
+        - !Ref MyDBSecurityGroup
+
+  DocumentDBInstance:
+    Type: 'AWS::DocDB::DBInstance'
+    Properties:
+      DBInstanceClass: 'db.t3.medium'
+      DBClusterIdentifier: !Ref DocumentDBCluster
+      DBInstanceIdentifier: 'my-documentdb-instance'
+
+  MyDBSubnetGroup:
+    Type: 'AWS::DocDB::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: 'My DB Subnet Group'
+      SubnetIds: 
+        - 'subnet-0cecceeba96592081' # Replace with your actual subnet IDs
+        - 'subnet-06caf240c7ebc9321'
+
+  MyDBSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'DocumentDB security group'
+      VpcId: 'vpc-12345' # Replace with your actual VPC ID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 27017
+          ToPort: 27017
+          CidrIp: 0.0.0.0/0
+
+Outputs:
+  DocumentDBClusterEndpoint:
+    Description: The endpoint of the DocumentDB cluster
+    Value: !GetAtt DocumentDBCluster.Endpoint
+  DocumentDBClusterReadEndpoint:
+    Description: The read endpoint of the DocumentDB cluster
+    Value: !GetAtt DocumentDBCluster.ReadEndpoint

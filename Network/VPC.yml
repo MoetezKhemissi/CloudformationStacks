@@ -1,15 +1,19 @@
-Ressources:
-#VPC definition
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS Network Creation'
+
+Resources:
+  # VPC definition
   MyVPC:
     Type: 'AWS::EC2::VPC'
-    Poperties:
+    Properties:
       CidrBlock: '10.0.0.0/16'
       EnableDnsSupport: true
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-        Value: MyVPC
-#Subnet A definition
+          Value: MyVPC
+
+  # Subnet A definition
   SubnetA:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -19,7 +23,8 @@ Ressources:
       Tags:
         - Key: Name
           Value: SubnetA
-#Subnet B definition
+
+  # Subnet B definition
   SubnetB:
     Type: 'AWS::EC2::Subnet'
     Properties:
@@ -29,20 +34,23 @@ Ressources:
       Tags:
         - Key: Name
           Value: SubnetB
-#Gateway definition
+
+  # Gateway definition
   InternetGateway:
     Type: 'AWS::EC2::InternetGateway'
     Properties:
       Tags:
         - Key: Name
           Value: MyInternetGateway
-#Attach Gateway to VPC
+
+  # Attach Gateway to VPC
   AttachGateway:
     Type: 'AWS::EC2::VPCGatewayAttachment'
     Properties:
       VpcId: !Ref MyVPC
       InternetGatewayId: !Ref InternetGateway
-#Add routing table
+
+  # Add routing table
   RouteTable:
     Type: 'AWS::EC2::RouteTable'
     Properties:
@@ -50,7 +58,8 @@ Ressources:
       Tags:
         - Key: Name
           Value: MyRouteTable
-#Add public route to routing table
+
+  # Add public route to routing table
   PublicRoute:
     Type: 'AWS::EC2::Route'
     DependsOn: AttachGateway
@@ -58,19 +67,17 @@ Ressources:
       RouteTableId: !Ref RouteTable
       DestinationCidrBlock: '0.0.0.0/0'
       GatewayId: !Ref InternetGateway
-#Add Subnet1 to routing table
+
+  # Add Subnet1 to routing table
   SubnetARouteTableAssociation:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
       SubnetId: !Ref SubnetA
       RouteTableId: !Ref RouteTable
-#Add Subnet2 to routing table
+
+  # Add Subnet2 to routing table
   SubnetBRouteTableAssociation:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
       SubnetId: !Ref SubnetB
       RouteTableId: !Ref RouteTable
-
-
-
-
